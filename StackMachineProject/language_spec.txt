@@ -1,0 +1,330 @@
+====================================================================================================================================
+Data Types		Description													Prefix	Size on VHD		Syntax Example
+------------------------------------------------------------------------------------------------------------------------------------
+INTEGER		-	A 32-bit, signed integer.									I		(4 bytes)		496 / 0xFC
+FLOAT		-	Double precision floating point number.						F		(8 bytes)		32.1
+CHAR		-	An ASCII character.											C		(1 byte)		'c'
+BOOL		-	A TRUE or FALSE value.										B		(1 byte)		true
+LABEL		-	An abstract reference to another point in the program.		L		(N/A)			@myLabel / myLabel
+====================================================================================================================================
+// TODO: Some sort of key-value DB running along file system?
+
+Single-Line Comments
+====================================================================================================================================
+Specifier		Description
+------------------------------------------------------------------------------------------------------------------------------------
+; 				Anything after a semicolon gets ignored until the end of the line. No space after the semicolon is required.
+====================================================================================================================================
+
+
+Stack Notation
+====================================================================================================================================
+The behavior of a routine with respect to the stack is documented in a parenthesis notation common to stack-based languages.
+------------------------------------------------------------------------------------------------------------------------------------
+Example Syntax:		( c1..cn i -- i )
+------------------------------------------------------------------------------------------------------------------------------------
+Legend: --			Denotes the division between what the routine consumes and what it pushes to the stack. Items consumed appear
+					 on the left and items pushed appear on the right.
+		o			Represents an item of ANY data type.
+		i			Represents an INTEGER.
+		f			Represents a FLOAT.
+		c			Represents a CHAR.
+		b			Represents a BOOL.
+		l			Represents a LABEL.
+		x			Represents any specific item pulled from a consumed stack range.
+		*			Represents a copy or modified version of a consumed stack range.
+		o1			A number following a data type abbreviation can be used to differentiate items of like type but different value.
+		o1..on i	Represents a stack range. Members of the range will be of the type denoted by the data type abbreviation used.
+====================================================================================================================================
+
+
+Stack Ranges and Strings
+====================================================================================================================================
+A stack range is a sequence of items on the stack followed by an integer specifying how many items belong to the range. These are
+ used as an equivalent structure to a linked list or one-dimensional array. Items in the stack range may be of any type, and may
+ even encapsulate other stack ranges. Instructions such as POPN and JOIN are specifically meant for working with stack ranges.
+ 
+Strings are represented as a special type of stack range that exclusively contains CHARs, similar to char[] in infix notation 
+ languages such as C++. As a kind of stack range, any instruction meant for manipulating stack ranges will also work for strings. 
+ For instance, JOIN used on a string performs concatenation. Additional instructions that work with strings include PRINTSTR, 
+ TOSTRING, and GETLINE. 
+ 
+For convenience, rather than type each character literal, including single quotes, by hand you can use the special string notation 
+ detailed below to push a string to the stack. This notation also eliminates the need to manually count and specify the number of 
+ characters contained in the string.
+------------------------------------------------------------------------------------------------------------------------------------
+Specifier		Description
+------------------------------------------------------------------------------------------------------------------------------------
+""				Anything after two double quotes on a given line is treated as a string literal, including spaces and tabs.
+====================================================================================================================================
+
+
+Stack Manipulation Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+PUSH [o]	( -- o ) 				Pushes a constant onto the stack. Implicitly invoked whenever a literal is found.
+POP			( o -- ) 				Removes an item from the stack.
+POPN		( o1..on i -- )			Removes the top i items from the stack.
+DUP			( o -- o o ) 			Duplicates the item on top of the stack.
+DUPN		( o1..on i -- * * )		Duplicates the top i items on the stack.
+SWAP		( o1 o2 -- o2 o1 )		Swaps the top two items on the stack.
+ROTATE 		( o1..on i -- * )		Rotates the top i items on the stack. +i = clockwise, -i = counterclockwise.
+PICK 		( o1..on i -- * x ) 	Copies the item ith item and pushes it onto the stack.
+PUT			( o1..on o i -- * ) 	Replaces the ith item on the stack with o.
+DEPTH		( -- i )				Pushes an integer representing the number of items on the stack.
+
+JOIN		( o1..on i -- * )		Joins two stack ranges into one. For char ranges, this behaves like string concatenation.	
+SPLIT		( o1..on i i1 -- * )	Splits a stack range into two, starting at the specified index, i1.
+====================================================================================================================================
+
+
+Control Flow Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+BEGIN		( -- )					Special label that specifies the starting point of the program.
+EXIT		( i -- )				Causes the program to halt with the code given by i.
+ABORT		( c1..cn i -- )			Causes the program to abort with the specified range of chars as the exception message.
+JUMP		( l -- )				Unconditionally jumps to the position marked by label l.
+CJUMP		( b l -- )				If b is TRUE, jumps to the position marked by label l.
+CALL		( l -- )				Pushes current iPointer to the call stack, then jumps to the position marked by label l.
+RETURN		( -- )					Jumps to the instruction referenced by the item on top of the call stack.
+SLEEP		( i -- )				Pauses execution of the program for i milliseconds.
+EXECUTE		( c1..cn i -- i )		Assembles and runs the given character range as code.
+====================================================================================================================================
+
+
+Virtual Disk Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+MOUNT		( c1..cn i i1 i2 -- )	Mounts virtual disk with name specified by char range, sector size i1, and number of sectors i2.
+UNMOUNT		( -- )					Unmounts the currently mounted virtual disk.
+
+VDINFO		( -- i i )				Pushes the sector size and number of sectors to the stack.
+VDPOS		( -- i )				Pushes the current read-write head location onto the stack.
+SECTOR		( i -- i )				Pushes the start location for the given sector number onto the stack.
+SEEK		( i -- )				Moves the read-write head to the position represented by i.
+
+READB		( -- b )				Reads a boolean, starting at the read head's current position.
+READC		( -- c )				Reads a character, starting at the read head's current position.
+READI		( -- i )				Reads an integer, starting at the read head's current position.
+READF		( -- f )				Reads a float, starting at the read head's current position.
+READSTR		( -- c1..cn i )			Reads a range of characters, starting at the read head's current position.
+
+WRITEB		( b -- )				Writes a boolean, starting at the write head's current position.
+WRITEC		( c -- )				Writes a character, starting at the write head's current position.
+WRITEI		( i -- )				Writes an integer, starting at the write head's current position.
+WRITEF		( f -- )				Writes a float, starting at the write head's current position.
+WRITESTR	( c1..cn i -- )			Writes a range of characters, starting at the write head's current position.
+====================================================================================================================================
+
+
+Input/Output Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+PRINT		( o -- )				Prints a single item to the main output stream. Default System.out.
+ERROR		( o -- )				Prints a single item to the error output stream. Default System.err.
+LOG			( o i -- )				Prints a single item to the log output stream at level i. Default System.out.
+
+PRINTSTR	( c1..cn i -- )			Prints a character range to the main output stream. Default System.out.
+ERRORSTR	( c1..cn i -- )			Prints a character range to the error output stream. Default System.err.
+LOGSTR		( c1..cn i1 i2 -- )		Prints a character range to the log output stream at level i2. Default System.out.
+
+GETLINE		( -- c1..cn i )			Fetches a line of input from the input stream as a range of chars. Default System.in.
+DEBUG		( b -- )				If TRUE, turns the debug log output on. If FALSE, turns the debugger off.
+NEWLINE		( -- c )				Pushes a newline character onto the stack.
+TAB			( -- c )				Pushes a tab character onto the stack.
+SPACE		( -- c )				Pushes a space character onto the stack, since ' ' confuses the assembler.
+
+LOGWARNING	( -- i )				Pushes the integer corresponding to the LOG_WARNING (0) level to the stack.
+LOGEVENT	( -- i )				Pushes the integer corresponding to the LOG_EVENT (1) level to the stack.
+LOGINFO		( -- i )				Pushes the integer corresponding to the LOG_INFO (2) level to the stack.
+LOGVERBOSE	( -- i )				Pushes the integer corresponding to the LOG_VERBOSE (3) level to the stack.
+====================================================================================================================================
+
+
+Conversion Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+BTOI		( b -- i )				Converts a boolean to an integer, where 0 is false and 1 is true.
+BTOF		( b -- f )				Converts a boolean to a float, where 0.0 is false and 1.0 is true.
+
+ITOB		( i -- b )				Converts an integer to a boolean, where 0 is false and anything else is true.
+ITOF		( i -- f )				Converts an integer to a float. 15 = 15.0.
+
+FTOB		( f -- b )				Converts a float to a boolean, where 0.0 is false and anything else is true.
+FTOI		( f -- i )				Converts a float to an integer. 39.9 = 39.
+
+STRTOB		( c1..cn i -- b )		Converts a range of chars to a boolean, where ('t' 'r' 'u' 'e' 4) is true.
+STRTOI		( c1..cn i -- i )		Converts a range of chars to an integer. ('1' '5' 2) = 15.
+STRTOF		( c1..cn i -- f )		Converts a range of chars to a float. ('2' '.' '3' 3) = 2.3.
+
+HEXTOI		( c1..cn i -- i )		Converts a range of chars depicting an integer in hexadecimal to an integer.
+ITOHEX		( i -- c1..cn i )		Converts an integer to a range of chars depicting its hexadecimal representation.
+
+TOSTRING	( o -- c1..cn i )		Converts an object to a range of chars in the format 'c1 c2 ... cn numberOfChars'.
+CTOIR		( c -- i )				Converts a character into the integer representing its ASCII value.
+IRTOC		( i -- c )				Converts an integer into an ASCII character.
+TOUPPER		( c -- c )				Converts a character to its upper case form.
+TOLOWER		( c -- c )				Converts a character to its lower case form.
+====================================================================================================================================
+
+
+Logic Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+AND			( b1 b2 -- b )			Given two bools, if both are TRUE, result is TRUE, otherwise result is FALSE.
+OR			( b1 b2 -- b )			Given two bools, if at least one is TRUE, result is TRUE.
+XOR			( b1 b2 -- b )			Given two bools, if one and only one is TRUE, result is TRUE.
+NOT			( b -- b )				Result is the inverse of the supplied boolean.
+====================================================================================================================================
+
+
+Bitwise Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+BITAND		( i1 i2 -- i )			Performs a bitwise AND operation on the given two integers.
+BITOR		( i1 i2 -- i )			Performs a bitwise OR operation on the given two integers.
+BITXOR		( i1 i2 -- i )			Performs a bitwise XOR operation on the given two integers.
+SHIFTL		( i1 i2 -- i )			Performs a left bitshift operation on the first int by the amount of the second int.
+SHIFTR		( i1 i2 -- i )			Performs a right bitshift operation on the first int by the amount of the second int.
+====================================================================================================================================
+
+
+Comparison Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+ISBOOL		( o -- b )				Result is TRUE if the item on the top of the stack is a boolean.
+ISCHAR		( o -- b )				Result is TRUE if the item on the top of the stack is a character.
+ISINT		( o -- b )				Result is TRUE if the item on the top of the stack is an integer.
+ISFLOAT		( o -- b )				Result is TRUE if the item on the top of the stack is a float.
+
+STRISBOOL	( c1..cn i -- b )		Result is TRUE if the character range represents a boolean.
+STRISINT	( c1..cn i -- b )		Result is TRUE if the character range represents an integer.
+STRISHEX	( c1..cn i -- b )		Result is TRUE if the character range represents an integer in hexadecimal format.
+STRISFLOAT	( c1..cn i -- b )		Result is TRUE if the character range represents a float.
+
+CEQUALS		( c1 c2 -- b )			Result is TRUE if c1 and c2 are the same.
+CGREATER	( c1 c2 -- b )			Result is TRUE if c1 occurs after c2.
+CGREATEREQ	( c1 c2 -- b )			Result is TRUE if c1 occurs after or is equal to c2.
+CLESS		( c1 c2 -- b )			Result is TRUE if c1 occurs before c2.
+CLESSEQ		( c1 c2 -- b )			Result is TRUE if c1 occurs before or is equal to c2.
+
+IEQUALS		( i1 i2 -- b )			Result is TRUE if i1 is equal to i2.
+IGREATER	( i1 i2 -- b )			Result is TRUE if i1 is greater than i2.
+IGREATEREQ	( i1 i2 -- b )			Result is TRUE if i1 is greater than or equal to i2.
+ILESS		( i1 i2 -- b )			Result is TRUE if i1 is less than i2.
+ILESSEQ		( i1 i2 -- b )			Result is TRUE if i1 is less than or equal to i2.
+
+FEQUALS		( f1 f2 -- b )			Result is TRUE if f1 is equal to f2.
+FGREATER	( f1 f2 -- b )			Result is TRUE if f1 is greater than f2.
+FGREATEREQ	( f1 f2 -- b )			Result is TRUE if f1 is greater than or equal to f2.
+FLESS		( f1 f2 -- b )			Result is TRUE if f1 is less than f2.
+FLESSEQ		( f1 f2 -- b )			Result is TRUE if f1 is less than or equal to f2.
+====================================================================================================================================
+
+
+Math Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+IADD		( i1 i2 -- i )			Performs addition on two integers.
+ISUB		( i1 i2 -- i )			Performs subtraction, subtracting i2 from i1.
+IMULT		( i1 i2 -- i )			Performs multiplication on two integers.
+IDIV		( i1 i2 -- i )			Performs integer division, dividing i1 by i2.
+IPOW		( i1 i2 -- i )			Raises i1 to the i2nd power.
+ISQRT		( i -- i )				Finds the integer square root of i.
+IABS		( i -- i )				Finds the absolute value of i.
+
+FADD		( f1 f2 -- f )			Performs addition on two floats.
+FSUB		( f1 f2 -- f )			Performs subtraction, subtracting f2 from f1.
+FMULT		( f1 f2 -- f )			Performs multiplication on two floats.
+FDIV		( f1 f2 -- f )			Performs floating point division, dividing f1 by f2.
+FPOW		( f1 f2 -- f )			Raises f1 to the f2nd power.
+FSQRT		( f -- f )				Finds the approximate square root of f.
+FABS		( f -- f )				Finds the absolute value of f.
+
+MOD			( i1 i2 -- i )			Performs a modulus operation on two integers. Result is the remainder from integer division.
+RAND		( i -- i )				Generates a random number between [0, i2).
+FRAND		( -- f )				Generates a random number between [0.0, 1.0).
+
+ROUND		( f -- i )				Rounds f up or down according to standard rounding rules.
+FLOOR		( f -- f )				Calculates the floor of f, equivalent to rounding down or truncating.
+CEIL		( f -- f )				Calculates the ceiling of f, equivalent to rounding up.
+LOG10		( f -- f )				Calculates the base10 logarithm of f.
+NEXP		( f -- f )				Calculates euler's number, e, raised to the power of f.
+NLOG		( f -- f )				Calculates the natural logarithm of f.
+
+PI			( -- f )				Pushes PI to the stack.
+SIN			( f -- f )				Calculates the trigonometric sine of an angle f.
+COS			( f -- f )				Calculates the trigonometric cosine of an angle f.
+TAN			( f -- f )				Calculates the trigonometric tangent of an angle f.
+ASIN		( f -- f )				Calculates the arc sine of f, in the range -pi/2 to pi/2.
+ACOS		( f -- f )				Calculates the arc cosine of f, in the range 0.0 to pi.
+ATAN		( f -- f )				Calculates the arc tangent of f, in the range -pi/2 to pi/2.
+TODEG		( f -- f )				Converts f from radians to degrees.
+TORAD		( f -- f )				Converts f from degrees to radians.
+====================================================================================================================================
+
+
+Time Instructions
+====================================================================================================================================
+Specifier	Stack Notation		 	Description
+------------------------------------------------------------------------------------------------------------------------------------
+GETTIME		( -- i1 i2 i3 )			Fetches the current time in the format (hours, minutes, seconds).
+GETDATE		( -- i1 i2 i3 )			Fetches the current date in the format (year, month, day).
+====================================================================================================================================
+
+
+Code Example with Comments
+====================================================================================================================================
+The code is provided as an example of how the code can be written. Some lines have more than one instruction per line in an effort
+ to group them logically for clarity. Each line is commented to further aid with the high-level clarity of the code. If you wish
+ to see the contents of the stack as each instruction is run, simply execute this code with the debug flag set.
+====================================================================================================================================
+; This program prompts the user for a number, then 'counts' to that number. It expects a positive whole number.
+; --------------------------------------------------------------------------------------------------------------
+@_AskUser						; _AskUser ( -- c1..cn i ) - Prompt the user for a number.
+								; Push string "Enter a number:". This shortcut has to be on its own line.
+""Enter a number:
+SPACE 1 JOIN					; Concatenate a space, because trailing spaces are hard to read.
+PRINTSTR						; Print "Enter a number: " to main output.
+GETLINE							; Get a line of text from the user.
+RETURN							; Return to the calling code.
+
+@_ConvertInt					; _ConvertInt ( c1..cn i -- i ) Safely convert an integer.
+DUP 1 IADD DUPN					; _Duplicate the string on top of the stack.
+STRISINT CI_IsInt CJUMP			; If the string represents an integer, go to CI_IsInt.											
+''' ERRORSTR					; Else, print opening single quote to error output.
+								; Push string "' is not a number."
+""' is not a number.
+NEWLINE 1 JOIN 					; Concatenate a newline character.
+JOIN							; Concatenate "' is not a number.\n" with the input string.
+ERRORSTR						; Print "<input string>' is not a number." to error output.
+1 EXIT							; Exit the program with a code of 1 (failure).
+@CI_IsInt						; If the input string was an integer, we would have jumped here.
+STRTOI							; Convert the input string to an integer.
+RETURN							; Return to the calling code.
+
+BEGIN							; The program execution will start here. Equal to int main().
+_AskUser CALL					; Call procedure to ask the user for a number.
+_ConvertInt CALL				; Call the code to smartly convert the user input to an integer.
+1								; We will start the count at 1. Equivalent to int i=1;
+@LOOP_repeat					; Marks the start of our do-while loop.
+DUP TOSTRING					; Convert a copy of the count to a string.
+SPACE SWAP 1 IADD 				; Another way to concatenate a space to the string.
+PRINTSTR						; Print "<count> " to main output.
+1 IADD							; Increment the number by 1. Equivalent to i++;
+DUP 3 PICK 						; ( countTo count -- countTo count count countTo )
+ILESSEQ LOOP_repeat CJUMP		; While (count <= countTo) -> LOOP_Repeat
+DEPTH POPN						; Pop everything from the stack.
+NEWLINE PRINT					; Print a newline character.
+0 EXIT							; Exit with a code of 0 (success).
+====================================================================================================================================

@@ -1,0 +1,26 @@
+; ( c1..cn i -- ) Prompt the user for the xth number as denoted by char range.
+@_AskUser
+'E' 'n' 't' 'e' 'r' SPACE 6 PRINTSTR
+SPACE SWAP 1 IADD PRINTSTR
+'n' 'u' 'm' 'b' 'e' 'r' ':' SPACE 8 PRINTSTR
+RETURN
+
+; ( c1..cn i -- i ) Safely convert an integer.
+@_ConvertInt
+DUP 1 IADD DUPN STRISINT CI_IsInt CJUMP
+ERRORSTR 
+SPACE 'i' 's' SPACE 'n' 'o' 't' SPACE 'a' SPACE 'n' 'u' 'm' 'b' 'e' 'r' '.' NEWLINE 18 ERRORSTR
+1 EXIT
+@CI_IsInt
+STRTOI
+RETURN
+
+BEGIN
+'1' 's' 't' 3 _AskUser CALL 
+GETLINE _ConvertInt CALL
+'2' 'n' 'd' 3 _AskUser CALL
+GETLINE _ConvertInt CALL
+IADD
+'A' 'n' 's' 'w' 'e' 'r' ':' SPACE 8 PRINTSTR
+TOSTRING NEWLINE SWAP 1 IADD PRINTSTR
+0 EXIT

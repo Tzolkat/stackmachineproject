@@ -1,0 +1,43 @@
+; ( -- ) Prompt the user for a number.
+@_AskUser
+'E' 'n' 't' 'e' 'r' SPACE 'a' SPACE 'n' 'u' 'm' 'b' 'e' 'r' ':' SPACE 16 PRINTSTR
+RETURN
+
+; ( i -- ) Print a number.
+@_PrintNum
+TOSTRING SPACE SWAP 1 IADD PRINTSTR
+RETURN
+
+; ( c1..cn i -- i ) Safely convert an integer.
+@_ConvertInt
+DUP 1 IADD DUPN STRISINT CI_IsInt CJUMP
+ERRORSTR 
+SPACE 'i' 's' SPACE 'n' 'o' 't' SPACE 'a' SPACE 'n' 'u' 'm' 'b' 'e' 'r' '.' NEWLINE 18 ERRORSTR
+1 EXIT
+@CI_IsInt
+STRTOI
+RETURN
+
+; ( i -- i ) Calculate and display the first i Fibonacci numbers.
+@_Fibonacci
+DUP 0 IEQUALS F_IsZero CJUMP
+DUP 1 IEQUALS F_IsOne CJUMP
+1 ISUB _Fibonacci CALL
+2 DUPN IADD
+DUP _PrintNum CALL
+-3 ROTATE POP
+RETURN
+@F_IsZero
+RETURN
+@F_IsOne
+1 ISUB _Fibonacci CALL
+1 DUP _PrintNum CALL
+RETURN
+
+BEGIN
+_AskUser CALL
+GETLINE _ConvertInt CALL
+'R' 'e' 's' 'u' 'l' 't' ':' SPACE 8 PRINTSTR
+_Fibonacci CALL
+DEPTH POPN
+0 EXIT

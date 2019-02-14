@@ -1,0 +1,18 @@
+; Testing join and split with character ranges.
+; ---------------------------------------------------------------------------
+BEGIN
+true DEBUG					; Show the stack debugger.
+'H' 'e' 'l' 'l' 'o' 5		; Push three stack ranges. In this case, strings.
+SPACE 1
+'W' 'o' 'r' 'l' 'd' '!' 6
+JOIN JOIN					; Join/Concatenate the three ranges.
+NEWLINE 1 JOIN				; Append a newline.
+DUP 1 IADD DUPN PRINTSTR		; Print "Hello World!\n" but maintain a copy.
+4 SPLIT 					; Splits string into "Hell" and "o world!\n".
+POPN						; Discard "o world!\n"
+PRINTSTR						; Print "Hell".
+""Meow
+0 SPLIT
+NEWLINE 1 JOIN JOIN
+PRINTSTR
+0 EXIT

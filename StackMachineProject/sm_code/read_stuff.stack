@@ -1,0 +1,8 @@
+; Reads the stuff write_stuff wrote to sector 1 of test.disk.
+BEGIN
+""test.disk
+512 4 MOUNT
+""The stuff: 
+1 SECTOR SEEK READSTR
+NEWLINE 1 JOIN JOIN PRINTSTR
+0 EXIT

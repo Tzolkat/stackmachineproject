@@ -1,0 +1,7 @@
+; Test new string notation support.
+BEGIN
+""Hello World!
+; Note the space on the next line.
+"" 
+NEWLINE 1 JOIN JOIN PRINTSTR
+0 EXIT

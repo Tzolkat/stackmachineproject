@@ -1,0 +1,30 @@
+; ( -- ) Prompt the user for a number.
+@_AskUser
+'E' 'n' 't' 'e' 'r' SPACE 'a' SPACE 'n' 'u' 'm' 'b' 'e' 'r' ':' SPACE 16 PRINTSTR
+RETURN
+
+; ( c1..cn i -- i ) Safely convert an integer.
+@_ConvertInt
+DUP 1 IADD DUPN STRISINT CI_IsInt CJUMP
+ERRORSTR 
+SPACE 'i' 's' SPACE 'n' 'o' 't' SPACE 'a' SPACE 'n' 'u' 'm' 'b' 'e' 'r' '.' NEWLINE 18 ERRORSTR
+1 EXIT
+@CI_IsInt
+STRTOI
+RETURN
+
+; ( i -- i ) Recursively calculate i!
+@_Factorial
+DUP 2 IEQUALS F_Leave CJUMP
+DUP 1 ISUB _Factorial CALL
+IMULT
+@F_Leave
+RETURN
+
+BEGIN
+_AskUser CALL
+GETLINE _ConvertInt CALL
+_Factorial CALL
+'R' 'e' 's' 'u' 'l' 't' ':' SPACE 8 PRINTSTR
+TOSTRING PRINTSTR
+0 EXIT

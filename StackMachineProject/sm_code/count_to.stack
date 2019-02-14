@@ -1,0 +1,38 @@
+; This program prompts the user for a number, then 'counts' to that number. It expects a positive whole number.
+; --------------------------------------------------------------------------------------------------------------
+@_AskUser						; _AskUser ( -- c1..cn i ) - Prompt the user for a number.
+								; Push string "Enter a number:". This shortcut has to be on its own line.
+""Enter a number:
+SPACE 1 JOIN					; Concatenate a space.
+PRINTSTR						; Print "Enter a number: " to main output.
+GETLINE							; Get a line of text from the user.
+RETURN							; Return to the calling code.
+
+@_ConvertInt					; _ConvertInt ( c1..cn i -- i ) Safely convert an integer.
+DUP 1 IADD DUPN					; _Duplicate the string on top of the stack.
+STRISINT CI_IsInt CJUMP			; If the string represents an integer, go to CI_IsInt.											
+''' ERRORSTR					; Else, print opening single quote to error output.
+								; Push string "' is not a number."
+""' is not a number.
+NEWLINE 1 JOIN 					; Concatenate a newline character.
+JOIN							; Concatenate "' is not a number.\n" with the input string.
+ERRORSTR						; Print "<input string>' is not a number." to error output.
+1 EXIT							; Exit the program with a code of 1 (failure).
+@CI_IsInt						; If the input string was an integer, we would have jumped here.
+STRTOI							; Convert the input string to an integer.
+RETURN							; Return to the calling code.
+
+BEGIN							; The program execution will start here. Equal to int main().
+_AskUser CALL					; Call procedure to ask the user for a number.
+_ConvertInt CALL				; Call the code to smartly convert the user input to an integer.
+1								; We will start the count at 1. Equivalent to int i=1;
+@LOOP_repeat					; Marks the start of our do-while loop.
+DUP TOSTRING					; Convert a copy of the count to a string.
+SPACE SWAP 1 IADD 				; Another way to concatenate a space to the string.
+PRINTSTR						; Print "<count> " to main output.
+1 IADD							; Increment the number by 1. Equivalent to i++;
+DUP 3 PICK 						; ( countTo count -- countTo count count countTo )
+ILESSEQ LOOP_repeat CJUMP		; While (count <= countTo) -> LOOP_Repeat
+DEPTH POPN						; Pop everything from the stack.
+NEWLINE PRINT					; Print a newline character.
+0 EXIT							; Exit with a code of 0 (success).

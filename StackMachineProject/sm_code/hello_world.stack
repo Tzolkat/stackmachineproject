@@ -1,0 +1,2 @@
+; This is a comment. Ignore me!
+BEGIN 'H' 'e' 'l' 'l' 'o' SPACE 'W' 'o' 'r' 'l' 'd' '!' NEWLINE 13 PRINTSTR 0 EXIT ; End of line comment.

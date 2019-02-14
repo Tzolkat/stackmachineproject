@@ -1,0 +1,13 @@
+; Create a new virtual disk and write some data to it.
+BEGIN
+""test.disk
+512 4 MOUNT
+""Enter some stuff: 
+PRINTSTR
+GETLINE
+DUP DEPTH ROTATE
+1 SECTOR SEEK WRITESTR
+TOSTRING
+"" bytes written.
+NEWLINE 1 JOIN JOIN PRINTSTR
+0 EXIT
