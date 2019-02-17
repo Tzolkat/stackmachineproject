@@ -1,7 +1,6 @@
 // File System Wrapper class. Implements a 'tape' of bytes. Throws VMRuntimeException.
 // Author: Jason Jones
 // =========================================================================================
-// TODO: Document sectors.
 package net.tzolkat.StackMachineRuntime;
 
 import java.io.IOException;
